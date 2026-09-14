@@ -271,6 +271,34 @@ def availableDevices():
     return [{"id": device["id"], "name": device["name"], "is_active": device["is_active"]} for device in devices["devices"]]
 
 @mcp.tool()
+def queue():
+    """
+    Returns a queue of tracks as a list of dicts {"id": str, "name": str, "is_loaded": bool, "artists": {"id": str, "name": str} }
+    """
+    def _get_formatted_track(json, is_loaded):
+        artists = []
+        if "artists" in json:
+            for artist in json["artists"]:
+                artists.append({
+                    "id": artist["id"],
+                    "name": artist["name"] 
+                })
+        return {
+            "id": json["id"],
+            "name": json["name"],
+            "is_loaded": is_loaded,
+            "artists": artists
+        }
+    try:
+        queue_res = make_call("GET", "/me/player/queue")
+        res = [_get_formatted_track(queue_res["currently_playing"], is_loaded=True)]
+        for queue_item in queue_res["queue"]:
+            res.append(_get_formatted_track(queue_item, is_loaded=False))
+        return res
+    except:
+        return []
+
+@mcp.tool()
 def playSong(song_id: str, device_id: str | None = None):
     """
     Plays a song based on the provided song_id on a device with its provided device_id. If no device id is provided, a default (active) device will be used.
@@ -307,5 +335,7 @@ if __name__ == "__main__":
         playSong("2Ch7LmS7r2Gy2kc64wv3Bz", device_id="9baf2b182aa03c28a9498dc650e3d7a7cf4e8296")
     elif "--devices" in sys.argv:
         print(availableDevices())
+    elif "--queue" in sys.argv:
+        print(getQueue())
     else:
         print(getCurrentSong())
