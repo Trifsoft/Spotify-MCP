@@ -271,7 +271,7 @@ def availableDevices():
     return [{"id": device["id"], "name": device["name"], "is_active": device["is_active"]} for device in devices["devices"]]
 
 @mcp.tool()
-def getQueue():
+def queue():
     """
     Returns a queue of tracks as a list of dicts {"id": str, "name": str, "is_loaded": bool, "artists": {"id": str, "name": str} }
     """
@@ -316,6 +316,15 @@ def playSong(song_id: str, device_id: str | None = None):
     params = {"device_id": device_id} if device_id is not None else None
     json = {"uris": [f"spotify:track:{song_id}"]} if song_id is not None else None
     return make_action("PUT", "/me/player/play", params=params, json=json)
+
+@mcp.tool()
+def transferPlayback(device_id, play=False):
+    """
+    Transfer playback to a new device and optionally begin playback.
+    Return a boolean value of whether or not the action was successful or not. 
+    """
+    json = {"device_ids": [device_id], "play": play}
+    return make_action("PUT", "/me/player", json=json)
 
 @mcp.tool()
 def nextSong():
