@@ -271,7 +271,7 @@ def availableDevices():
     return [{"id": device["id"], "name": device["name"], "is_active": device["is_active"]} for device in devices["devices"]]
 
 @mcp.tool()
-def queue():
+def getQueue():
     """
     Returns a queue of tracks as a list of dicts {"id": str, "name": str, "is_loaded": bool, "artists": {"id": str, "name": str} }
     """
@@ -301,10 +301,21 @@ def queue():
 @mcp.tool()
 def playSong(song_id: str, device_id: str | None = None):
     """
-    Plays a song based on the provided song_id on a device with its provided device_id. If no device id is provided, a default (active) device will be used.
+    Plays a song based on the provided song_id on a device with its provided device_id. 
+    If no song_id is provided, plays currently loaded song
+    If no device id is provided, a default (active) device will be used.
+    Return a boolean value of whether or not the action was successful or not.
     """
+    if device_id is None:
+        devices = availableDevices()
+        if(len(devices) == 0):
+            return False
+        device_id = devices[0]
+    if song_id is None:
+        return transferPlayback(device_id, True)
     params = {"device_id": device_id} if device_id is not None else None
-    make_call("PUT", "/me/player/play", return_response=False, params = params, json={"uris": [f"spotify:track:{song_id}"]})
+    json = {"uris": [f"spotify:track:{song_id}"]} if song_id is not None else None
+    return make_action("PUT", "/me/player/play", params=params, json=json)
 
 @mcp.tool()
 def nextSong():
@@ -328,7 +339,7 @@ if __name__ == "__main__":
         get_access_token()
         print("Authorization complete. Token cached — you can now run with --mcp.")
     elif "--toggle-play" in sys.argv:
-        print(togglePlayback())
+        print(play())
     elif "--search" in sys.argv:
         print(search("die for you", "track"))
     elif "--play-song" in sys.argv:
