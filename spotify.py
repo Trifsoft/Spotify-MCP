@@ -279,6 +279,20 @@ def playSong(song_id: str, device_id: str | None = None):
     params = {"device_id": device_id} if device_id is not None else None
     make_call("PUT", "/me/player/play", return_response=False, params = params, json={"uris": [f"spotify:track:{song_id}"]})
 
+@mcp.tool()
+def nextSong():
+    """
+    Plays next song in queue
+    """
+    make_call("POST", "/me/player/next", return_response=False)
+
+@mcp.tool()
+def previousSong():
+    """
+    Plays previous song in queue
+    """
+    make_call("POST", "/me/player/previous", return_response=False)
+
 if __name__ == "__main__":
     import sys
     if "--mcp" in sys.argv:
