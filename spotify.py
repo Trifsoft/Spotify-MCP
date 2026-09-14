@@ -151,7 +151,7 @@ def getCurrentSong():
     """
     Fetch the track currently playing on the user's Spotify account.
 
-    Returns a dict like {"name": ..., "artists": ...} if something is playing,
+    Returns a dict like {"name": str, "artists": str, "id": str} if something is playing,
     or None if nothing is playing.
     """
     resp = make_call("GET", "/me/player/currently-playing")
@@ -160,6 +160,7 @@ def getCurrentSong():
         track = resp["item"]
         return {
             "name": track["name"],
+            "id": track["id"],
             "artists": ", ".join(a["name"] for a in track["artists"])
         }
     return None
