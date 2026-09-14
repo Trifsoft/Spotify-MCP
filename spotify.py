@@ -134,6 +134,14 @@ def make_call(method, endpoint, return_response = True, **kwargs):
         return resp.json()
     return None
 
+def make_action(method, endpoint, **kwargs) -> bool:
+    try:
+        make_call(method, endpoint, return_response=False, **kwargs)
+        return True
+    except:
+        return False
+
+
 # ----------- MCP ------------
 
 mcp = MCPServer("Demo")
@@ -158,21 +166,11 @@ def getCurrentSong():
 
 
 @mcp.tool()
-def togglePlayback():
+def pause():
     """
-    Toggles Spotify playback: pauses if something is currently playing,
-    resumes/plays if it's currently paused.
-
-    Returns a dict like {"action": "paused"} or {"action": "played"}.
+    Tries to pause playback. Returns a boolean whether or not it succeeded or not.
     """
-    state = make_call("GET", "/me/player")
-
-    if state is not None and state["is_playing"]:
-        make_call("PUT", "/me/player/pause", return_response = False)
-        return {"action": "paused"}
-    else:
-        make_call("PUT", "/me/player/play", return_response = False)
-        return {"action": "played"}
+    return make_action("PUT", "/me/player/pause")
 
 @mcp.tool()
 def search(search_query: str, comma_separated_search_types: str):
@@ -282,16 +280,16 @@ def playSong(song_id: str, device_id: str | None = None):
 @mcp.tool()
 def nextSong():
     """
-    Plays next song in queue
+    Plays next song in queue. Returns a boolean value of whether or not the action succeeded or not.
     """
-    make_call("POST", "/me/player/next", return_response=False)
+    return make_action("POST", "/me/player/next", return_response=False)
 
 @mcp.tool()
 def previousSong():
     """
-    Plays previous song in queue
+    Plays previous song in queue. Returns a boolean value of whether or not the action succeeded or not.
     """
-    make_call("POST", "/me/player/previous", return_response=False)
+    return make_action("POST", "/me/player/previous")
 
 if __name__ == "__main__":
     import sys
